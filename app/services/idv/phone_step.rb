@@ -6,7 +6,7 @@ module Idv
 
     def submit(step_params)
       self.step_params = step_params
-      self.idv_result = Idv::Agent.new(applicant).proof(:address)
+      proof_address
       increment_attempts_count unless failed_due_to_timeout_or_exception?
       success = idv_result[:success]
       update_idv_session if success
@@ -17,7 +17,7 @@ module Idv
     end
 
     def failure_reason
-      return :fail if idv_session.step_attempts[:phone] >= Idv::Attempter.idv_max_attempts
+      return :fail if idv_session.step_attempts[:phone] >= idv_max_attempts
       return :timeout if idv_result[:timed_out]
       return :jobfail if idv_result[:exception].present?
       return :warning if idv_result[:success] != true
@@ -26,6 +26,19 @@ module Idv
     private
 
     attr_accessor :idv_session, :step_params, :idv_result
+
+    def idv_max_attempts
+      Throttle::THROTTLE_CONFIG[:idv_resolution][:max_attempts]
+    end
+
+    def proof_address
+      self.idv_result = Idv::Agent.new(applicant).proof(:address)
+      add_proofing_cost
+    end
+
+    def add_proofing_cost
+      Db::ProofingCost::AddUserProofingCost.call(idv_session.current_user.id, :lexis_nexis_address)
+    end
 
     def applicant
       @applicant ||= idv_session.applicant.merge(
@@ -62,6 +75,8 @@ module Idv
       idv_session.applicant = applicant
       idv_session.vendor_phone_confirmation = true
       idv_session.user_phone_confirmation = phone_matches_user_phone?
+      Db::ProofingComponent::Add.call(idv_session.current_user.id, :address_check,
+                                      'lexis_nexis_address')
     end
 
     def phone_matches_user_phone?

@@ -14,6 +14,12 @@ class Analytics
       user_id: attributes[:user_id] || user.uuid,
     }
     ahoy.track(event, analytics_hash.merge!(request_attributes))
+    register_doc_auth_step_from_analytics_event(event, attributes)
+  end
+
+  def register_doc_auth_step_from_analytics_event(event, attributes)
+    return unless user && user.class != AnonymousUser
+    Funnel::DocAuth::RegisterStepFromAnalyticsEvent.call(user.id, event, attributes[:success])
   end
 
   # :reek:FeatureEnvy
@@ -111,7 +117,9 @@ class Analytics
   IDV_PHONE_RECORD_VISIT = 'IdV: phone of record visited'.freeze
   IDV_REVIEW_COMPLETE = 'IdV: review complete'.freeze
   IDV_REVIEW_VISIT = 'IdV: review info visited'.freeze
+  IDV_USPS_ADDRESS_LETTER_REQUESTED = 'IdV: USPS address letter requested'.freeze
   IDV_USPS_ADDRESS_SUBMITTED = 'IdV: USPS address submitted'.freeze
+  IDV_USPS_ADDRESS_VISITED = 'IdV: USPS address visited'.freeze
   IDV_VERIFICATION_ATTEMPT_CANCELLED = 'IdV: verification attempt cancelled'.freeze
   INVALID_AUTHENTICITY_TOKEN = 'Invalid Authenticity Token'.freeze
   LOGOUT_INITIATED = 'Logout Initiated'.freeze
@@ -147,6 +155,8 @@ class Analytics
   RATE_LIMIT_TRIGGERED = 'Rate Limit Triggered'.freeze
   RESPONSE_TIMED_OUT = 'Response Timed Out'.freeze
   REMEMBERED_DEVICE_USED_FOR_AUTH = 'Remembered device used for authentication'.freeze
+  SP_HANDOFF_BOUNCED_DETECTED = 'SP handoff bounced detected'.freeze
+  SP_HANDOFF_BOUNCED_VISIT = 'SP handoff bounced visited'.freeze
   BACKUP_CODE_CREATED = 'Backup Code Created'.freeze
   BACKUP_CODE_DELETED = 'Backup Code Delete'.freeze
   BACKUP_CODE_SETUP_VISIT = 'Backup Code Setup Visited'.freeze

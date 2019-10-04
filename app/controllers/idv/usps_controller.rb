@@ -10,11 +10,12 @@ module Idv
     before_action :max_attempts_reached, only: [:update]
 
     def index
+      analytics.track_event(Analytics::IDV_USPS_ADDRESS_VISITED)
       @presenter = UspsPresenter.new(current_user)
     end
 
     def create
-      create_user_event(:usps_mail_sent, current_user)
+      update_tracking
       idv_session.address_verification_mechanism = :usps
 
       if current_user.decorate.pending_profile_requires_verification?
@@ -36,6 +37,12 @@ module Idv
     end
 
     private
+
+    def update_tracking
+      analytics.track_event(Analytics::IDV_USPS_ADDRESS_LETTER_REQUESTED)
+      create_user_event(:usps_mail_sent, current_user)
+      Db::ProofingComponent::Add.call(current_user.id, :address_check, 'gpo_letter')
+    end
 
     def submit_form_and_perform_resolution
       result = idv_form.submit(profile_params)
@@ -139,8 +146,20 @@ module Idv
       FormResponse.new(success: success, errors: result[:errors])
     end
 
+    def idv_throttle_params
+      [idv_session.current_user.id, :idv_resolution]
+    end
+
+    def idv_attempter_increment
+      Throttler::Increment.call(*idv_throttle_params)
+    end
+
+    def idv_attempter_throttled?
+      Throttler::IsThrottled.call(*idv_throttle_params)
+    end
+
     def throttle_failure
-      attempter.increment
+      idv_attempter_increment
       flash_error
     end
 
@@ -150,15 +169,11 @@ module Idv
     end
 
     def max_attempts_reached
-      flash_error if attempter.exceeded?
+      flash_error if idv_attempter_throttled?
     end
 
     def error_message
-      I18n.t('idv.failure.sessions.' + (attempter.exceeded? ? 'fail' : 'heading'))
-    end
-
-    def attempter
-      @attempter ||= Idv::Attempter.new(idv_session.current_user)
+      I18n.t('idv.failure.sessions.' + (idv_attempter_throttled? ? 'fail' : 'heading'))
     end
 
     def send_reminder

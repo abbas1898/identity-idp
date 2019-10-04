@@ -29,7 +29,13 @@ feature 'Sign in' do
     user = build(:user, x509_dn_uuid: 'unknown-pivcac-uuid')
     signin_with_piv(user)
 
-    expect(current_path).to eq new_user_session_path
+    expect(current_path).to eq login_piv_cac_account_not_found_path
+  end
+
+  scenario 'user cannot sign in with an unregistered piv/cac card' do
+    signin_with_bad_piv
+
+    expect(current_path).to eq login_piv_cac_did_not_work_path
   end
 
   it 'does not throw an exception if the email contains invalid bytes' do
@@ -576,6 +582,20 @@ feature 'Sign in' do
 
       expect(redirect_uri.to_s).to start_with('http://localhost:7654/auth/result')
       expect(ServiceProviderRequest.count).to eq 0
+    end
+  end
+
+  context 'a prompt login sp redirects back to auth url immediately after we redirect to them' do
+    it 'logs an SP bounce and displays the bounced error screen' do
+      user = create(:user, :signed_up)
+      visit_idp_from_oidc_sp_with_loa1_prompt_login
+      fill_in_credentials_and_submit(user.email, user.password)
+      fill_in_code_with_last_phone_otp
+      click_submit_default
+      click_continue
+
+      visit_idp_from_oidc_sp_with_loa1_prompt_login
+      expect(current_path).to eq(bounced_path)
     end
   end
 end

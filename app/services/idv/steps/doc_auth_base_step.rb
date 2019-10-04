@@ -1,3 +1,4 @@
+# rubocop:disable Metrics/ClassLength
 # :reek:TooManyMethods
 # :reek:RepeatedConditional
 module Idv
@@ -32,13 +33,21 @@ module Idv
         Figaro.env.acuant_simulator == 'true'
       end
 
-      def attempter
-        @attempter ||= Idv::Attempter.new(current_user)
+      def idv_throttle_params
+        [current_user.id, :idv_resolution]
+      end
+
+      def attempter_increment
+        Throttler::Increment.call(*idv_throttle_params)
+      end
+
+      def attempter_throttled?
+        Throttler::IsThrottled.call(*idv_throttle_params)
       end
 
       def idv_failure(result)
-        attempter.increment
-        type = attempter.exceeded? ? :fail : :warning
+        attempter_increment
+        type = attempter_throttled? ? :fail : :warning
         redirect_to idv_session_failure_url(reason: type)
         result
       end
@@ -48,10 +57,21 @@ module Idv
         data[:notice] = I18n.t('errors.doc_auth.general_info')
         return failure(data, analytics_hash) unless back_image_verified
 
-        return [nil, data] if data['Result'] == GOOD_RESULT
+        return [nil, data] if process_good_result(data)
 
         mark_step_incomplete(reset_step)
         failure(I18n.t('errors.doc_auth.general_error'), data)
+      end
+
+      def process_good_result(data)
+        return unless data['Result'] == GOOD_RESULT
+        save_proofing_components
+        true
+      end
+
+      def save_proofing_components
+        Db::ProofingComponent::Add.call(user_id, :document_check, 'acuant')
+        Db::ProofingComponent::Add.call(user_id, :document_type, 'state_id')
       end
 
       def extract_pii_from_doc(data)
@@ -64,9 +84,7 @@ module Idv
       end
 
       def parse_pii(data)
-        Idv::Utils::PiiFromDoc.new(data).call(
-          current_user&.phone_configurations&.take&.phone,
-        )
+        Idv::Utils::PiiFromDoc.new(data).call(current_user&.phone_configurations&.take&.phone)
       end
 
       def user_id_from_token
@@ -90,12 +108,20 @@ module Idv
 
       def throttle_post_front_image
         return [false, I18n.t('errors.doc_auth.acuant_throttle')] if throttled_else_increment
-        rescue_network_errors { assure_id.post_front_image(image.read) }
+        rescue_network_errors do
+          result = assure_id.post_front_image(image.read)
+          Db::ProofingCost::AddUserProofingCost.call(user_id, :acuant_front_image)
+          result
+        end
       end
 
       def throttle_post_back_image
         return [false, I18n.t('errors.doc_auth.acuant_throttle')] if throttled_else_increment
-        rescue_network_errors { assure_id.post_back_image(image.read) }
+        rescue_network_errors do
+          result = assure_id.post_back_image(image.read)
+          Db::ProofingCost::AddUserProofingCost.call(user_id, :acuant_back_image)
+          result
+        end
       end
 
       def test_credentials?
@@ -127,3 +153,4 @@ module Idv
     end
   end
 end
+# rubocop:enable Metrics/ClassLength
