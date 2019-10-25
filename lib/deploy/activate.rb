@@ -1,4 +1,5 @@
 # :reek:TooManyMethods
+# rubocop:disable Metrics/AbcSize, Metrics/ClassLength, Metrics/MethodLength
 
 require 'active_support/core_ext/hash/deep_merge'
 require 'logger'
@@ -55,16 +56,28 @@ module Deploy
         File.join(root, 'config/service_providers.yml'),
       )
 
-      # Public assets: sp-logos
+      # Service provider public keys
       symlink_verbose(
-        File.join(root, idp_config_checkout_name, 'public/assets/images/sp-logos'),
-        File.join(root, 'public/images/sp-logos'),
+        File.join(root, idp_config_checkout_name, 'certs/sp'),
+        File.join(root, 'certs/sp'),
       )
 
+      # Public assets: sp-logos
+      # Inject the logo files into the app's asset folder. deploy/activate is
+      # run before deploy/build-post-config, so these will be picked up by the
+      # rails asset pipeline.
+      logos_dir = File.join(root, idp_config_checkout_name, 'public/assets/images/sp-logos')
+      Dir.entries(logos_dir).each do |name|
+        next if name.start_with?('.')
+        target = File.join(logos_dir, name)
+        link = File.join(root, 'app/assets/images/sp-logos', name)
+        symlink_verbose(target, link, force: true)
+      end
     end
 
-    def symlink_verbose(dest, link)
+    def symlink_verbose(dest, link, force: false)
       logger.info("symlink: #{link.inspect} => #{dest.inspect}")
+      File.unlink(link) if force && File.exist?(link)
       File.symlink(dest, link)
     end
 
@@ -142,3 +155,4 @@ module Deploy
     end
   end
 end
+# rubocop:enable Metrics/AbcSize, Metrics/ClassLength, Metrics/MethodLength
