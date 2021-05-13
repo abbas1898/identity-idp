@@ -94,7 +94,7 @@ group :development, :test do
   gem 'parallel_tests'
   gem 'pry-byebug'
   gem 'psych'
-  gem 'puma'
+  gem 'puma', '>= 4.3.8'
   gem 'rspec-rails', '~> 3.7'
   gem 'rubocop', '~> 0.72.0', require: false
   gem 'rubocop-rails', require: false
