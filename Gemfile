@@ -72,7 +72,7 @@ gem 'xmlenc', '~> 0.6'
 gem 'zxcvbn-js'
 
 group :development do
-  gem 'better_errors'
+  gem 'better_errors', '>= 2.8.0'
   gem 'binding_of_caller'
   gem 'brakeman', require: false
   gem 'bummr', require: false
