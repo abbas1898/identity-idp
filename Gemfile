@@ -3,9 +3,9 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}.git" }
 
 ruby '~> 2.5.3'
 
-gem 'rails', '~> 5.1.3'
+gem 'rails', '~> 5.2.7', '>= 5.2.7.1'
 
-gem 'ahoy_matey', '~> 2.0'
+gem 'ahoy_matey', '~> 2.2', '>= 2.2.1'
 gem 'american_date'
 gem 'aws-sdk-kms', '~> 1.4'
 gem 'aws-sdk-ses', '~> 1.6'
@@ -67,7 +67,7 @@ gem 'uglifier', '~> 3.2'
 gem 'user_agent_parser'
 gem 'valid_email'
 gem 'webauthn'
-gem 'webpacker', '~> 3.4'
+gem 'webpacker', '~> 3.6', '>= 3.6.0'
 gem 'xmlenc', '~> 0.6'
 gem 'zxcvbn-js'
 
@@ -95,7 +95,7 @@ group :development, :test do
   gem 'pry-byebug'
   gem 'psych'
   gem 'puma'
-  gem 'rspec-rails', '~> 3.7'
+  gem 'rspec-rails', '~> 3.8', '>= 3.8.2'
   gem 'rubocop', '~> 0.72.0', require: false
   gem 'rubocop-rails', require: false
   gem 'slim_lint'
