@@ -55,7 +55,7 @@ gem 'sassc-rails', '~> 2.1.2'
 gem 'scrypt'
 gem 'secure_headers', '~> 6.0'
 gem 'simple_form'
-gem 'sinatra', require: false
+gem 'sinatra', '>= 2.2.0', require: false
 gem 'slim-rails'
 gem 'stringex', require: false
 gem 'strong_migrations'
