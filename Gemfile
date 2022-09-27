@@ -3,12 +3,12 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}.git" }
 
 ruby '~> 2.5.3'
 
-gem 'rails', '~> 5.1.3'
+gem 'rails', '~> 5.2.8', '>= 5.2.8.1'
 
-gem 'ahoy_matey', '~> 2.0'
+gem 'ahoy_matey', '~> 2.2', '>= 2.2.1'
 gem 'american_date'
-gem 'aws-sdk-kms', '~> 1.4'
-gem 'aws-sdk-ses', '~> 1.6'
+gem 'aws-sdk-kms', '~> 1.24', '>= 1.24.0'
+gem 'aws-sdk-ses', '~> 1.26', '>= 1.26.0'
 gem 'base32-crockford'
 gem 'device_detector'
 gem 'devise', '~> 4.7.1'
@@ -24,7 +24,7 @@ gem 'httparty'
 gem 'identity-hostdata', github: '18F/identity-hostdata', branch: 'master'
 gem 'identity-telephony', github: '18f/identity-telephony', tag: 'v0.0.16'
 gem 'identity_validations', github: '18F/identity-validations', branch: 'master'
-gem 'json-jwt'
+gem 'json-jwt', '>= 1.11.0'
 gem 'local_time'
 gem 'lograge'
 gem 'maxminddb'
@@ -38,7 +38,7 @@ gem 'proofer', github: '18F/identity-proofer-gem', tag: 'v2.7.0'
 gem 'pry-doc'
 gem 'pry-rails'
 gem 'rack-attack'
-gem 'rack-cors', require: 'rack/cors'
+gem 'rack-cors', '>= 1.0.5', require: 'rack/cors'
 gem 'rack-headers_filter'
 gem 'rack-timeout'
 gem 'raise-if-root'
@@ -53,9 +53,9 @@ gem 'safe_target_blank'
 gem 'saml_idp', git: 'https://github.com/18F/saml_idp.git', ref: '5e451e7'
 gem 'sassc-rails', '~> 2.1.2'
 gem 'scrypt'
-gem 'secure_headers', '~> 6.0'
+gem 'secure_headers', '~> 6.3', '>= 6.3.0'
 gem 'simple_form'
-gem 'sinatra', require: false
+gem 'sinatra', '>= 2.2.0', require: false
 gem 'slim-rails'
 gem 'stringex', require: false
 gem 'strong_migrations'
@@ -64,17 +64,17 @@ gem 'twilio-ruby'
 gem 'two_factor_authentication'
 gem 'typhoeus'
 gem 'uglifier', '~> 3.2'
-gem 'user_agent_parser'
+gem 'user_agent_parser', '>= 2.6.0'
 gem 'valid_email'
 gem 'webauthn'
-gem 'webpacker', '~> 3.4'
-gem 'xmlenc', '~> 0.6'
+gem 'webpacker', '~> 3.6', '>= 3.6.0'
+gem 'xmlenc', '~> 0.7', '>= 0.7.1'
 gem 'zxcvbn-js'
 
 group :development do
-  gem 'better_errors'
+  gem 'better_errors', '>= 2.8.0'
   gem 'binding_of_caller'
-  gem 'brakeman', require: false
+  gem 'brakeman', '>= 4.7.1', require: false
   gem 'bummr', require: false
   gem 'derailed'
   gem 'fasterer', require: false
@@ -94,8 +94,8 @@ group :development, :test do
   gem 'parallel_tests'
   gem 'pry-byebug'
   gem 'psych'
-  gem 'puma'
-  gem 'rspec-rails', '~> 3.7'
+  gem 'puma', '>= 4.3.12'
+  gem 'rspec-rails', '~> 3.8', '>= 3.8.2'
   gem 'rubocop', '~> 0.72.0', require: false
   gem 'rubocop-rails', require: false
   gem 'slim_lint'
@@ -116,7 +116,7 @@ group :test do
   gem 'rails-controller-testing'
   gem 'shoulda-matchers', '~> 4.0.1', require: false
   gem 'timecop'
-  gem 'webdrivers', '~> 3.0'
+  gem 'webdrivers', '~> 3.9', '>= 3.9.4'
   gem 'webmock'
   gem 'zonebie'
 end
